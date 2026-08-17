@@ -1,0 +1,40 @@
+{
+  "compression": "zstd",
+  "formatVersion": 1,
+  "snapshot": "aml-gold-2026",
+  "storageFormat": "parquet",
+  "tables": [
+    {
+      "expectedRows": 2087762,
+      "name": "dim_account"
+    },
+    {
+      "expectedRows": 122333,
+      "name": "dim_bank"
+    },
+    {
+      "expectedRows": 15,
+      "name": "dim_currency"
+    },
+    {
+      "expectedRows": 56,
+      "name": "dim_date"
+    },
+    {
+      "expectedRows": 8,
+      "name": "dim_laundering_pattern"
+    },
+    {
+      "expectedRows": 7,
+      "name": "dim_payment_format"
+    },
+    {
+      "expectedRows": 22743,
+      "name": "fact_laundering_pattern_txn"
+    },
+    {
+      "expectedRows": 31898238,
+      "name": "fact_transaction"
+    }
+  ]
+}

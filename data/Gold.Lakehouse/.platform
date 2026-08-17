@@ -2,8 +2,8 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
     "type": "Lakehouse",
-    "displayName": "Gold",
-    "description": "Created by fab"
+    "displayName": "GOLD",
+    "description": "AML Gold Lakehouse provisioned from GitHub"
   },
   "config": {
     "version": "2.0",

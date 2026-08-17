@@ -1,0 +1,71 @@
+name: Deploy AML Gold to Fabric
+
+on:
+  workflow_dispatch:
+    inputs:
+      workspace_name:
+        description: Fabric workspace name
+        required: false
+        default: amldemo
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/deploy-fabric.yml
+      - data/Gold.Lakehouse/**
+      - data/snapshots/gold/**
+      - scripts/deploy-fabric.ps1
+      - src/bootstrap_gold.py
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: fabric-aml-gold-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      FABRIC_WORKSPACE_NAME: ${{ inputs.workspace_name || vars.FABRIC_WORKSPACE_NAME || 'amldemo' }}
+      FABRIC_CAPACITY_ID: ${{ vars.FABRIC_CAPACITY_ID }}
+
+    steps:
+      - name: Checkout deployment code
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Download Gold snapshot from Git LFS
+        shell: bash
+        run: |
+          started_at=$(date +%s)
+          git lfs pull --include="data/snapshots/gold/**"
+          finished_at=$(date +%s)
+          bytes=$(du -sb data/snapshots/gold | cut -f1)
+          echo "LFS_DOWNLOAD_SECONDS=$((finished_at - started_at))" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "LFS_DOWNLOAD_BYTES=$bytes" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Sign in to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install AzCopy
+        shell: bash
+        run: |
+          curl -fsSL https://aka.ms/downloadazcopy-v10-linux -o /tmp/azcopy.tar.gz
+          tar -xzf /tmp/azcopy.tar.gz -C /tmp
+          sudo install "$(find /tmp -type f -name azcopy | head -1)" /usr/local/bin/azcopy
+
+      - name: Provision GOLD and load Delta tables
+        shell: pwsh
+        run: |
+          ./scripts/deploy-fabric.ps1 `
+            -WorkspaceName "$env:FABRIC_WORKSPACE_NAME" `
+            -LakehouseName "GOLD" `
+            -CapacityId "$env:FABRIC_CAPACITY_ID"
