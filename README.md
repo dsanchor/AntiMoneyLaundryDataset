@@ -18,6 +18,9 @@ versiona ni ejecuta los datos de las tablas. La automatización completa se real
 El proceso es idempotente: una nueva ejecución sobrescribe cada tabla con el snapshot
 versionado y vuelve a ejecutar todas las validaciones.
 
+Para desplegarlo en otro tenant o entorno Fabric, consulta
+[`docs/deploy-own-environment.md`](docs/deploy-own-environment.md).
+
 ## Datos versionados
 
 Los datos se guardan en `data/snapshots/gold/<tabla>/*.parquet` usando compresión
