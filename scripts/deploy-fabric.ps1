@@ -106,7 +106,10 @@ if (-not (Get-Command azcopy -ErrorAction SilentlyContinue)) {
 $env:AZCOPY_AUTO_LOGIN_TYPE = "AZCLI"
 $destination = "https://onelake.dfs.fabric.microsoft.com/$workspaceId/$lakehouseId/Files/bootstrap/gold"
 $phaseTimer = [System.Diagnostics.Stopwatch]::StartNew()
-azcopy copy "$SnapshotRoot/*" $destination --recursive=true --overwrite=true
+azcopy login --login-type AZCLI
+if ($LASTEXITCODE -ne 0) { throw "AzCopy login failed with exit code $LASTEXITCODE." }
+azcopy copy "$SnapshotRoot/*" $destination --recursive=true --overwrite=true `
+    --trusted-microsoft-suffixes="*.fabric.microsoft.com"
 if ($LASTEXITCODE -ne 0) { throw "AzCopy failed with exit code $LASTEXITCODE." }
 Complete-Phase -Name "onelake_upload" -Timer $phaseTimer
 
