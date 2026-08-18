@@ -32,6 +32,44 @@ El administrador de Fabric debe permitir que el grupo o service principal usado 
 llamar a las API publicas de Fabric. Si la politica del tenant restringe los service
 principals, debe incluirse la identidad en el grupo autorizado.
 
+## Alternativa local sin GitHub Actions
+
+El repositorio incluye dos rutas equivalentes para el despliegue local: un script en
+PowerShell y un script en bash. La version recomendada para entornos Unix/Linux es
+`scripts/deploy-fabric.sh`, que mantiene la misma logica que el workflow de GitHub.
+Para ejecutarlo localmente se necesitan Azure CLI, AzCopy, Git LFS y acceso a la
+capacidad de Fabric.
+
+```bash
+git lfs install
+git lfs pull --include="data/snapshots/gold/**"
+
+export WORKSPACE_NAME="amldemo-david"
+export LAKEHOUSE_NAME="GOLD"
+export CAPACITY_ID="<FABRIC_CAPACITY_ID>"
+
+az login
+az account set --subscription "<SUBSCRIPTION_ID>"
+
+./scripts/deploy-fabric.sh
+```
+
+`CAPACITY_ID` solo es obligatorio si el workspace no existe o no tiene una capacidad
+asignada. Para consultar las capacidades disponibles:
+
+```powershell
+az rest --method get `
+  --resource "https://api.fabric.microsoft.com" `
+  --url "https://api.fabric.microsoft.com/v1/capacities" `
+  --query "value[].{id:id,name:displayName,state:state,sku:sku}" `
+  --output table
+```
+
+La cuenta usada en `az login` debe poder crear o administrar el workspace, escribir en
+OneLake y ejecutar sesiones Spark. El script crea o reutiliza el workspace y el
+Lakehouse, carga el snapshot, materializa las tablas Delta y ejecuta las validaciones.
+No requiere una aplicacion Entra, secretos de GitHub ni una credencial OIDC.
+
 ## 1. Crear un fork
 
 Desde GitHub, crear un fork de:
@@ -43,12 +81,12 @@ https://github.com/paakos/AntiMoneyLaundryDataset
 En los ejemplos siguientes se usan estas variables. Sustituir sus valores:
 
 ```powershell
-$GitHubOwner = "<USUARIO_U_ORGANIZACION>"
+$GitHubOwner = "<USUARIO_U_ORGANIZACION_DE_DAVID>"
 $GitHubRepo = "AntiMoneyLaundryDataset"
 $TenantId = "<TENANT_ID>"
 $SubscriptionId = "<SUBSCRIPTION_ID>"
 $CapacityId = "<FABRIC_CAPACITY_ID>"
-$WorkspaceName = "amldemo-target"
+$WorkspaceName = "amldemo-david"
 ```
 
 El ID Fabric de la capacidad se obtiene con:
@@ -64,9 +102,9 @@ az rest --method get `
 
 ## 2. Crear el workspace persistente
 
-Se recomienda que el propietario del entorno cree el workspace con su identidad y
-conceda al workflow acceso solo a ese workspace. Esto evita dar permisos de
-aprovisionamiento sobre toda la capacidad.
+Se recomienda que David cree el workspace con su identidad y conceda al workflow acceso
+solo a ese workspace. Esto evita dar permisos de aprovisionamiento sobre toda la
+capacidad.
 
 ```powershell
 $FabricResource = "https://api.fabric.microsoft.com"
@@ -158,8 +196,8 @@ habilitada esa proteccion. Si Azure devuelve `AADSTS700213`, revisar en el log d
 
 ## 4. Conceder acceso al workspace
 
-Con la identidad del propietario del entorno, agregar el service principal como
-`Contributor` solamente en el workspace creado:
+Con la identidad de David, agregar el service principal como `Contributor` solamente
+en el workspace creado:
 
 ```powershell
 $RoleBody = @{
@@ -271,5 +309,5 @@ El proceso es idempotente: reutiliza el workspace y `GOLD`, vuelve a cargar el s
 y sobrescribe las tablas Delta. No contiene pasos para eliminar el workspace,
 Lakehouse, tablas o archivos. Solo elimina la sesion Livy temporal al finalizar.
 
-Los secretos OIDC del repositorio original no se copian al fork. Cada entorno debe
-crear y configurar su propia aplicacion Entra y sus propios secretos de GitHub.
+Los secretos OIDC del repositorio original no se copian al fork. David debe crear y
+configurar su propia aplicacion Entra y sus propios secretos de GitHub.
