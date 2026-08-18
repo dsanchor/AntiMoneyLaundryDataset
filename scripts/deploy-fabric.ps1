@@ -108,9 +108,9 @@ $destination = "https://onelake.dfs.fabric.microsoft.com/$workspaceId/$lakehouse
 $phaseTimer = [System.Diagnostics.Stopwatch]::StartNew()
 azcopy login --login-type AZCLI
 if ($LASTEXITCODE -ne 0) { throw "AzCopy login failed with exit code $LASTEXITCODE." }
-azcopy copy "$SnapshotRoot/*" $destination --recursive=true --overwrite=true `
+azcopy sync $SnapshotRoot $destination --recursive=true --delete-destination=true `
     --trusted-microsoft-suffixes="*.fabric.microsoft.com"
-if ($LASTEXITCODE -ne 0) { throw "AzCopy failed with exit code $LASTEXITCODE." }
+if ($LASTEXITCODE -ne 0) { throw "AzCopy sync failed with exit code $LASTEXITCODE." }
 Complete-Phase -Name "onelake_upload" -Timer $phaseTimer
 
 $livyBase = "$FabricApi/workspaces/$workspaceId/lakehouses/$lakehouseId/livyapi/versions/2023-12-01"

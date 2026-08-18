@@ -5,6 +5,12 @@ documentan aqui. El formato sigue [Keep a Changelog](https://keepachangelog.com/
 
 ## [Unreleased]
 
+### Fixed
+
+- La carga del snapshot usa `azcopy sync --delete-destination=true` para eliminar shards
+  obsoletas en OneLake. Esto evita duplicar filas cuando una nueva exportacion cambia el
+  nombre fisico de un archivo Parquet.
+
 ## [2026-08-18]
 
 ### Added
