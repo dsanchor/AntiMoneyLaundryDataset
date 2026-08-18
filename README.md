@@ -3,6 +3,9 @@
 Repositorio reproducible para aprovisionar un workspace Microsoft Fabric y restaurar el
 Lakehouse `GOLD` con las ocho tablas Delta del modelo AML.
 
+El historial de cambios de datos, automatizacion y despliegue se mantiene en
+[`CHANGELOG.md`](CHANGELOG.md).
+
 ## Arquitectura de despliegue
 
 Fabric Git Integration sincroniza la definición de `data/Gold.Lakehouse`, pero no

@@ -43,12 +43,12 @@ https://github.com/paakos/AntiMoneyLaundryDataset
 En los ejemplos siguientes se usan estas variables. Sustituir sus valores:
 
 ```powershell
-$GitHubOwner = "<USUARIO_U_ORGANIZACION_DE_DAVID>"
+$GitHubOwner = "<USUARIO_U_ORGANIZACION>"
 $GitHubRepo = "AntiMoneyLaundryDataset"
 $TenantId = "<TENANT_ID>"
 $SubscriptionId = "<SUBSCRIPTION_ID>"
 $CapacityId = "<FABRIC_CAPACITY_ID>"
-$WorkspaceName = "amldemo-david"
+$WorkspaceName = "amldemo-target"
 ```
 
 El ID Fabric de la capacidad se obtiene con:
@@ -64,9 +64,9 @@ az rest --method get `
 
 ## 2. Crear el workspace persistente
 
-Se recomienda que David cree el workspace con su identidad y conceda al workflow acceso
-solo a ese workspace. Esto evita dar permisos de aprovisionamiento sobre toda la
-capacidad.
+Se recomienda que el propietario del entorno cree el workspace con su identidad y
+conceda al workflow acceso solo a ese workspace. Esto evita dar permisos de
+aprovisionamiento sobre toda la capacidad.
 
 ```powershell
 $FabricResource = "https://api.fabric.microsoft.com"
@@ -158,8 +158,8 @@ habilitada esa proteccion. Si Azure devuelve `AADSTS700213`, revisar en el log d
 
 ## 4. Conceder acceso al workspace
 
-Con la identidad de David, agregar el service principal como `Contributor` solamente
-en el workspace creado:
+Con la identidad del propietario del entorno, agregar el service principal como
+`Contributor` solamente en el workspace creado:
 
 ```powershell
 $RoleBody = @{
@@ -271,5 +271,5 @@ El proceso es idempotente: reutiliza el workspace y `GOLD`, vuelve a cargar el s
 y sobrescribe las tablas Delta. No contiene pasos para eliminar el workspace,
 Lakehouse, tablas o archivos. Solo elimina la sesion Livy temporal al finalizar.
 
-Los secretos OIDC del repositorio original no se copian al fork. David debe crear y
-configurar su propia aplicacion Entra y sus propios secretos de GitHub.
+Los secretos OIDC del repositorio original no se copian al fork. Cada entorno debe
+crear y configurar su propia aplicacion Entra y sus propios secretos de GitHub.

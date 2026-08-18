@@ -31,6 +31,8 @@ for name, partitions in table_partitions.items():
     source = f"{tables_root}/{name}"
     target = f"{snapshot_root}/{name}"
     frame = spark.read.format("delta").load(source)
+    if name == "dim_bank" and "country" not in frame.columns:
+        raise ValueError("dim_bank must contain country before exporting the snapshot")
     row_count = frame.count()
 
     (frame.repartition(partitions)
